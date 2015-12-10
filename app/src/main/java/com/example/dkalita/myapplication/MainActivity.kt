@@ -1,27 +1,36 @@
 package com.example.dkalita.myapplication
 
 import android.os.Bundle
-import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.TextView
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 
 class MainActivity : AppCompatActivity() {
 
-	val handler = Handler()
+	val TAG = "MainActivity"
 
-	val runnable: Runnable = Runnable {
-		Log.i("!!!", "Hello")
-		handler.postDelayed(runnable, 1000)
-	}
+	var future: ListenableFuture<String>? = null
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
 
 		val textView = findViewById(R.id.text) as TextView
-		textView.text = Constants.title
 
-		handler.post(runnable);
+		future = createFuture().apply {
+			subscribe {
+				onSuccess {
+					Log.i(TAG, "onSuccess: $it")
+					textView.setText(it)
+				}
+				onFailure {
+					Log.e(TAG, "onFailure")
+				}
+			}
+		}
 	}
+
+	fun createFuture() = Futures.immediateFuture("Hello");
 }
